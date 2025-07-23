@@ -1,0 +1,13 @@
+{
+  "tastingForm": {
+    "title": "Nueva cata",
+    "date": "Fecha",
+    "name": "Nombre del café",
+    "roaster": "Tostador",
+    "origin": "Origen",
+    "method": "Método de preparación",
+    "score": "Puntaje general",
+    "notes": "Notas",
+    "photo": "Foto"
+  }
+}
