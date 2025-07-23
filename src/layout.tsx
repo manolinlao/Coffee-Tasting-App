@@ -1,14 +1,16 @@
 // src/layout.tsx
+import { useUnit } from 'effector-react';
 import { Outlet, NavLink } from 'react-router-dom';
+import { langEvents, langStores } from './shared/model/languageModel';
 
 export const AppLayout = () => {
-  //const language = useUnit(langStores.$language);
-  //const [menuOpen, setMenuOpen] = useState(false);
-  /*
-  const onChangeLanguage = (e: { value: string }) => {
-    langEvents.changeLanguage(e.value);
-  };
-  */
+  const language = useUnit(langStores.$language);
+  const changeLanguage = useUnit(langEvents.changeLanguage);
+
+  const languages = [
+    { code: 'en', label: 'English' },
+    { code: 'es', label: 'Español' }
+  ];
 
   return (
     <>
@@ -32,19 +34,19 @@ export const AppLayout = () => {
           </li>
         </ul>
       </div>
-      <div>
-        {/*<div className="mt-4 md:mt-auto">
-          <Dropdown
-            value={language}
-            options={languages}
-            onChange={onChangeLanguage}
-            optionLabel="label"
-            optionValue="code"
-            placeholder="Idioma"
-            className="w-full"
-          />
-        </div>
-        */}
+      <div className="mt-6">
+        <label className="block text-sm mb-1">Idioma</label>
+        <select
+          className="select select-bordered w-full"
+          value={language}
+          onChange={(e) => changeLanguage(e.target.value)}
+        >
+          {languages.map((lang) => (
+            <option key={lang.code} value={lang.code}>
+              {lang.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <Outlet />
