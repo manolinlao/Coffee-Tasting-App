@@ -19,8 +19,7 @@ export const AppLayout = () => {
               to="/"
               className={({ isActive }) => (isActive ? 'font-bold' : '')}
             >
-              Nueva cata <button className="btn btn-primary">Button</button>
-              <button className="btn w-64 rounded-full">Button</button>
+              Nueva cata
             </NavLink>
           </li>
           <li>

@@ -5,7 +5,7 @@ import type { TastingEntry } from '../../../../api/tasting/types';
 import { TastingEntrySchema } from '../../../../api/tasting/schema';
 import { tastingEvents, tastingStores } from '../../../../api/tasting/model';
 import { TextBlock } from '../../../../shared/components/TextBlock';
-import { Container, ErrorList } from './styles';
+import { Container } from './styles';
 
 export const TastingForm = () => {
   const { t } = useTranslation();
@@ -27,8 +27,7 @@ export const TastingForm = () => {
 
   const onPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const filesArray = Array.from(e.target.files);
-      setPhotos(filesArray);
+      setPhotos(Array.from(e.target.files));
     }
   };
 
@@ -101,111 +100,100 @@ export const TastingForm = () => {
         </TextBlock>
 
         {(errors.length > 0 || addError) && (
-          <ErrorList>
-            <ul>
+          <div className="alert alert-error shadow-sm">
+            <ul className="list-disc list-inside text-sm">
               {errors.map((err, i) => (
                 <li key={i}>{err}</li>
               ))}
             </ul>
-          </ErrorList>
+          </div>
         )}
-        {/*
-        <FloatLabel>
-          <Calendar
-            id="tasting-date"
-            value={date}
-            onChange={(e) => setDate(e.value as Date)}
-            showIcon
-            dateFormat={i18n.language === 'es' ? 'dd/mm/yy' : 'mm/dd/yy'}
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">{t('tastingForm.date')}</span>
+          </label>
+          <input
+            type="date"
+            value={date.toISOString().substring(0, 10)}
+            onChange={(e) => setDate(new Date(e.target.value))}
+            className="input input-bordered"
           />
-          <label htmlFor="tasting-date">{t('tastingForm.date')}</label>
-        </FloatLabel>
+        </div>
 
-        <FloatLabel>
-          <InputText
-            id="coffee-name"
-            value={coffeeName}
-            onChange={(e) => setCoffeeName(e.target.value)}
-          />
-          <label htmlFor="coffee-name">{t('tastingForm.name')}</label>
-        </FloatLabel>
+        {[
+          { label: 'name', value: coffeeName, setter: setCoffeeName },
+          { label: 'origin', value: origin, setter: setOrigin },
+          { label: 'roaster', value: roaster, setter: setRoaster },
+          { label: 'method', value: method, setter: setMethod }
+        ].map(({ label, value, setter }) => (
+          <div className="form-control" key={label}>
+            <label className="label">
+              <span className="label-text">{t(`tastingForm.${label}`)}</span>
+            </label>
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => setter(e.target.value)}
+              className="input input-bordered"
+            />
+          </div>
+        ))}
 
-        <FloatLabel>
-          <InputText
-            id="origin"
-            value={origin}
-            onChange={(e) => setOrigin(e.target.value)}
-          />
-          <label htmlFor="origin">{t('tastingForm.origin')}</label>
-        </FloatLabel>
-
-        <FloatLabel>
-          <InputText
-            id="roaster"
-            value={roaster}
-            onChange={(e) => setRoaster(e.target.value)}
-          />
-          <label htmlFor="roaster">{t('tastingForm.roaster')}</label>
-        </FloatLabel>
-
-        <FloatLabel>
-          <InputText
-            id="method"
-            value={method}
-            onChange={(e) => setMethod(e.target.value)}
-          />
-          <label htmlFor="method">{t('tastingForm.method')}</label>
-        </FloatLabel>
-
-        <FloatLabel>
-          <InputText
-            id="score"
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">{t('tastingForm.score')}</span>
+          </label>
+          <input
             type="number"
             min={0}
             max={10}
-            value={score !== null ? String(score) : ''}
+            value={score !== null ? score : ''}
             onChange={(e) =>
               setScore(e.target.value === '' ? null : Number(e.target.value))
             }
+            className="input input-bordered"
           />
-          <label htmlFor="score">{t('tastingForm.score')}</label>
-        </FloatLabel>
+        </div>
 
-        <FloatLabel>
-          <InputTextarea
-            id="notes"
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">{t('tastingForm.notes')}</span>
+          </label>
+          <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            autoResize
+            className="textarea textarea-bordered"
           />
-          <label htmlFor="notes">{t('tastingForm.notes')}</label>
-        </FloatLabel>
+        </div>
 
-        <FileInputWrapper>
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">{t('tastingForm.photos')}</span>
+          </label>
           <input
             type="file"
-            id="photo"
             accept="image/*"
             onChange={onPhotoChange}
+            className="file-input file-input-bordered"
           />
-
           {photos.length > 0 && (
-            <PreviewImage src={URL.createObjectURL(photos[0])} alt="Preview" />
+            <img
+              src={URL.createObjectURL(photos[0])}
+              alt="Preview"
+              className="mt-2 rounded shadow max-h-48 object-cover"
+            />
           )}
-        </FileInputWrapper>
+        </div>
 
-        <SubmitButtonWrapper>
-          <Button
+        <div className="form-control mt-4">
+          <button
             type="submit"
-            label={isSubmitting ? 'guardando' : t('tastingForm.title')}
-            disabled={isSubmitting}
-            onClick={(e) => {
-              e.currentTarget.blur();
-            }}
-          />
-        </SubmitButtonWrapper>
-        */}
+            className={`btn btn-primary ${isSubmitting ? 'btn-disabled' : ''}`}
+          >
+            {isSubmitting ? 'Guardando...' : t('tastingForm.title')}
+          </button>
+        </div>
       </Container>
     </form>
   );

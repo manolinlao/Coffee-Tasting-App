@@ -18,14 +18,17 @@ export const TastingList = () => {
       {entries.length === 0 ? (
         <p>No hay catas guardadas.</p>
       ) : (
-        <div style={{ display: 'grid', gap: '1rem' }}>
+        <div className="flex-col">
           {entries.map((entry) => (
-            <div key={entry.id}>
-              <p>Origen: {entry.origin}</p>
-              <p>Método: {entry.method}</p>
-              <p>Fecha: {formatDate(entry.date)}</p>
-              <p>Notas: {entry.notes}</p>
-              <p>Puntuación: {entry.score}</p>
+            <div key={entry.id} className="card card-border card-xs mb-2">
+              <div className="card-body">
+                <h2 className="card-title">Card Title</h2>
+                <p>Origen: {entry.origin}</p>
+                <p>Método: {entry.method}</p>
+                <p>Fecha: {formatDate(entry.date)}</p>
+                <p>Notas: {entry.notes}</p>
+                <p>Puntuación: {entry.score}</p>
+              </div>
             </div>
           ))}
         </div>

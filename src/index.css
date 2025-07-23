@@ -5,7 +5,9 @@
         "*.css": "tailwindcss"
       }
 */
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes: coffee --default;
+}
 /*
 html,
 body {
