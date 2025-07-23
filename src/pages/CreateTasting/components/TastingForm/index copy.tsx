@@ -1,11 +1,18 @@
 import { useState } from 'react';
 import { useUnit } from 'effector-react';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../../../i18n/i18n';
 import type { TastingEntry } from '../../../../api/tasting/types';
 import { TastingEntrySchema } from '../../../../api/tasting/schema';
 import { tastingEvents, tastingStores } from '../../../../api/tasting/model';
 import { TextBlock } from '../../../../shared/components/TextBlock';
-import { Container, ErrorList } from './styles';
+import {
+  Container,
+  ErrorList,
+  FileInputWrapper,
+  PreviewImage,
+  SubmitButtonWrapper
+} from './styles';
 
 export const TastingForm = () => {
   const { t } = useTranslation();
@@ -88,7 +95,7 @@ export const TastingForm = () => {
   if (isSubmitting) {
     return (
       <Container>
-        <div>spinner loading</div>
+        <ProgressSpinner style={{ width: '50px', height: '50px' }} />
       </Container>
     );
   }
@@ -109,7 +116,6 @@ export const TastingForm = () => {
             </ul>
           </ErrorList>
         )}
-        {/*
         <FloatLabel>
           <Calendar
             id="tasting-date"
@@ -205,7 +211,6 @@ export const TastingForm = () => {
             }}
           />
         </SubmitButtonWrapper>
-        */}
       </Container>
     </form>
   );
