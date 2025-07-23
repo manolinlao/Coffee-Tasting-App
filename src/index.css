@@ -1,5 +1,12 @@
 @import 'tailwindcss';
-
+/* 
+  modify vscode settings and 
+    "files.associations": {
+        "*.css": "tailwindcss"
+      }
+*/
+@plugin "daisyui";
+/*
 html,
 body {
   margin: 0;
@@ -17,3 +24,4 @@ body {
 *::after {
   box-sizing: inherit;
 }
+  */
