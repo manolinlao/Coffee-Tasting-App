@@ -1,11 +1,13 @@
 import { useUnit } from 'effector-react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { Menu } from 'lucide-react';
+import { LogOut, Menu } from 'lucide-react';
 import { langEvents, langStores } from './shared/model/languageModel';
+import { authEvents } from './shared/model/authModel';
 
 export const AppLayout = () => {
   const language = useUnit(langStores.$language);
   const changeLanguage = useUnit(langEvents.changeLanguage);
+  const logout = useUnit(authEvents.logout);
 
   const languages = [
     { code: 'en', label: 'English' },
@@ -52,6 +54,11 @@ export const AppLayout = () => {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="flex gap-2 mt-2 btn btn-outline" onClick={logout}>
+          Logout
+          <LogOut />
         </div>
       </aside>
 
@@ -111,6 +118,10 @@ export const AppLayout = () => {
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="flex gap-2 mt-2 btn btn-outline" onClick={logout}>
+              Logout
+              <LogOut />
             </div>
           </aside>
         </div>
