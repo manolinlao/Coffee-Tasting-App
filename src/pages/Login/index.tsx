@@ -1,19 +1,28 @@
 // src/pages/Login.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 import {
   authEffects,
   authEvents,
   authStores
 } from '../../shared/model/authModel';
+import { useNavigate } from 'react-router-dom';
 
 export const Login = () => {
+  const user = useUnit(authStores.$user);
+  const loginError = useUnit(authStores.$loginError);
+  const login = useUnit(authEvents.login);
+  const loginIn = useUnit(authEffects.loginFx.pending);
+  const navigate = useNavigate();
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const login = useUnit(authEvents.login);
-  const loggingIn = useUnit(authEffects.loginFx.pending);
-  const loginError = useUnit(authStores.$loginError);
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,9 +56,9 @@ export const Login = () => {
         <button
           type="submit"
           className="btn btn-primary w-full"
-          disabled={loggingIn}
+          disabled={loginIn}
         >
-          {loggingIn ? 'Ingresando...' : 'Ingresar'}
+          {loginIn ? 'Ingresando...' : 'Ingresar'}
         </button>
       </form>
     </div>
