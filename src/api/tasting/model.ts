@@ -1,7 +1,7 @@
 import { createEffect, createStore, createEvent, sample } from 'effector';
 import type { TastingEntry } from './types';
 import { addTastingEntry, getAllTastingEntriesByUser } from './db';
-import { showAlert } from '../../shared/model/alertModel';
+import { ALERT_TYPE, showAlert } from '../../shared/model/alertModel';
 
 /*********************************************************** */
 /** Fetching tastings 
@@ -26,7 +26,10 @@ sample({
 
 sample({
   clock: fetchTastingsFx.failData,
-  fn: (error) => `Error al cargar entradas: ${error}`,
+  fn: (error) => ({
+    message: `Error al cargar entradas: ${error}`,
+    type: ALERT_TYPE.Error
+  }),
   target: showAlert
 });
 
@@ -56,14 +59,20 @@ sample({
 
 sample({
   clock: addTastingEntryFx.doneData,
-  fn: (id) => `Entrada guardada con ID: ${id}`,
+  fn: (id) => ({
+    message: `Entrada guardada con ID: ${id}`,
+    type: ALERT_TYPE.Success
+  }),
   target: showAlert
 });
 
 // Al fallar al añadir
 sample({
   clock: addTastingEntryFx.failData,
-  fn: () => 'Error al guardar la entrada',
+  fn: () => ({
+    message: 'Error al guardar la entrada',
+    type: ALERT_TYPE.Error
+  }),
   target: showAlert
 });
 

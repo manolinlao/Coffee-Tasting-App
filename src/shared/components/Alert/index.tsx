@@ -1,26 +1,34 @@
-// src/shared/ui/Alert.tsx
 import { useUnit } from 'effector-react';
-import { $alertMessage, showAlert } from '../../model/alertModel';
+import { $alert, showAlert, type AlertType } from '../../model/alertModel';
 import { useEffect } from 'react';
 
+const typeToClass: Record<AlertType, string> = {
+  success: 'alert-success',
+  error: 'alert-error',
+  warning: 'alert-warning',
+  info: 'alert-info'
+};
+
 export const Alert = () => {
-  const message = useUnit($alertMessage);
+  const alert = useUnit($alert);
 
   useEffect(() => {
-    if (message) {
+    if (alert.message) {
       const timer = setTimeout(() => {
         showAlert(null);
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [message]);
+  }, [alert]);
 
-  if (!message) return null;
+  if (!alert.message) return null;
+
+  const alertClass = typeToClass[alert.type || 'info'];
 
   return (
     <div className="fixed top-4 right-4 z-50">
-      <div className="alert alert-success shadow-lg animate-fade-in">
-        <span>{message}</span>
+      <div className={`alert ${alertClass} shadow-lg animate-fade-in`}>
+        <span>{alert.message}</span>
       </div>
     </div>
   );

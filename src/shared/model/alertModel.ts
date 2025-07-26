@@ -1,9 +1,25 @@
-// src/shared/model/alertModel.ts
 import { createStore, createEvent } from 'effector';
 
-export const showAlert = createEvent<string | null>();
+export const ALERT_TYPE = {
+  Success: 'success',
+  Error: 'error',
+  Warning: 'warning',
+  Info: 'info'
+};
 
-export const $alertMessage = createStore<string | null>(null).on(
+export type AlertType = (typeof ALERT_TYPE)[keyof typeof ALERT_TYPE];
+
+export interface AlertState {
+  message: string | null;
+  type?: AlertType;
+}
+
+export const showAlert = createEvent<AlertState | null>();
+
+export const $alert = createStore<AlertState>({
+  message: null,
+  type: ALERT_TYPE.Info
+}).on(
   showAlert,
-  (_, msg) => msg
+  (_, alert) => alert || { message: null, type: ALERT_TYPE.Info }
 );
