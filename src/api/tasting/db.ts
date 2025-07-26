@@ -51,3 +51,11 @@ export async function getAllTastingEntries(): Promise<TastingEntry[]> {
   const db = await getDB();
   return db.getAll(STORE_NAME);
 }
+
+export async function getAllTastingEntriesByUser(
+  userId: string
+): Promise<TastingEntry[]> {
+  const db = await getDB();
+  const allEntries = await db.getAll(STORE_NAME);
+  return allEntries.filter((entry) => entry.userId === userId);
+}

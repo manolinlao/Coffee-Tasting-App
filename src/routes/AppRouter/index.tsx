@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { CreateTasting } from '../../pages/CreateTasting';
 import { TastingList } from '../../pages/TastingList';
-import { AppLayout } from '../../layout';
+import { AppLayout } from '../../AppLayout';
 import { Login } from '../../pages/Login';
 import { ProtectedRoute } from '../ProtectedRoute';
 

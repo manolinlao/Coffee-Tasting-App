@@ -1,5 +1,6 @@
 export interface TastingEntry {
   id?: number;
+  userId: string;
   date: Date;
   coffeeName?: string;
   origin?: string;
@@ -9,3 +10,5 @@ export interface TastingEntry {
   notes?: string;
   photos?: File[];
 }
+
+export type TastingEntryForm = Omit<TastingEntry, 'id' | 'userId'>;

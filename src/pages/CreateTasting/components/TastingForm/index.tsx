@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useUnit } from 'effector-react';
 import { useTranslation } from 'react-i18next';
-import type { TastingEntry } from '../../../../api/tasting/types';
+import type { TastingEntryForm } from '../../../../api/tasting/types';
 import { TastingEntrySchema } from '../../../../api/tasting/schema';
 import { tastingEvents, tastingStores } from '../../../../api/tasting/model';
 import { TextBlock } from '../../../../shared/components/TextBlock';
 import { Container } from './styles';
+import { authStores } from '../../../../shared/model/authModel';
 
 export const TastingForm = () => {
   const { t } = useTranslation();
@@ -13,6 +14,7 @@ export const TastingForm = () => {
   const addError = useUnit(tastingStores.$addError);
   const isSubmitting = useUnit(tastingStores.$isSubmitting);
   const addTasting = useUnit(tastingEvents.addTasting);
+  const user = useUnit(authStores.$user);
 
   const [date, setDate] = useState<Date>(new Date());
   const [coffeeName, setCoffeeName] = useState('');
@@ -46,7 +48,7 @@ export const TastingForm = () => {
     e.preventDefault();
     if (isSubmitting) return;
 
-    const dataToValidate: TastingEntry = {
+    const dataToValidate: TastingEntryForm = {
       date,
       coffeeName,
       origin,
@@ -80,7 +82,8 @@ export const TastingForm = () => {
     console.log('✅ Datos válidos:', result.data);
 
     setErrors([]);
-    addTasting(result.data);
+    console.log('calling addTasting', user?.id);
+    addTasting({ ...result.data, userId: user!.id });
     clearForm();
   };
 
