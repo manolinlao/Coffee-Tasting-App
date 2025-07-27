@@ -34,7 +34,7 @@ async function getDB() {
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME, {
           keyPath: 'id',
-          autoIncrement: true
+          autoIncrement: true //esto fuerza que las id's sean number
         });
       }
     }
@@ -58,4 +58,20 @@ export async function getAllTastingEntriesByUser(
   const db = await getDB();
   const allEntries = await db.getAll(STORE_NAME);
   return allEntries.filter((entry) => entry.userId === userId);
+}
+
+export async function deleteTastingEntry(id: number): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  const store = tx.objectStore(STORE_NAME);
+  await store.delete(id);
+  await tx.done;
+}
+
+export async function deleteAllTastingEntries(): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  const store = tx.objectStore(STORE_NAME);
+  await store.clear();
+  await tx.done;
 }

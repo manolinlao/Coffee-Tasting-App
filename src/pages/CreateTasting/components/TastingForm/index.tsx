@@ -82,7 +82,6 @@ export const TastingForm = () => {
     console.log('✅ Datos válidos:', result.data);
 
     setErrors([]);
-    console.log('calling addTasting', user?.id);
     addTasting({ ...result.data, userId: user!.id });
     clearForm();
   };

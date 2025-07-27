@@ -1,14 +1,19 @@
 import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
-import { useLocalizedDateFormat } from '../../hooks/useLocalizedDateFormat';
+import { Coffee, Trash2 } from 'lucide-react';
 import { tastingEvents, tastingStores } from '../../api/tasting/model';
+import { useLocalizedDateFormat } from '../../hooks/useLocalizedDateFormat';
 import { authStores } from '../../shared/model/authModel';
-import { Coffee } from 'lucide-react';
+import { confirmModalModelEvents } from '../../shared/model/confirmModalModel';
 
 export const TastingList = () => {
   const entries = useUnit(tastingStores.$tastingList);
   const getTastings = useUnit(tastingEvents.getTastings);
   const user = useUnit(authStores.$user);
+  const showConfirmModal = useUnit(confirmModalModelEvents.showConfirmModal);
+  const deleteEntry = useUnit(tastingEvents.deleteTastingEntryEvt);
+  const deleteAllEntries = useUnit(tastingEvents.deleteAllTastingEntriesEvt);
+
   const { formatDate } = useLocalizedDateFormat();
 
   useEffect(() => {
@@ -16,6 +21,21 @@ export const TastingList = () => {
       getTastings(user.id);
     }
   }, [getTastings, user]);
+
+  const handleDeleteEntry = (id: number) => {
+    showConfirmModal({
+      message: '¿Seguro que quieres borrar esta cata?',
+      onConfirm: () => deleteEntry(id)
+    });
+  };
+
+  const handleDeleteAll = () => {
+    showConfirmModal({
+      message:
+        '¿Seguro que quieres borrar TODAS las catas? Esta acción no se puede deshacer.',
+      onConfirm: () => deleteAllEntries()
+    });
+  };
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -30,8 +50,8 @@ export const TastingList = () => {
           <button
             className="mt-6 btn btn-primary"
             onClick={() => {
-              // aquí podrías hacer navegación hacia el formulario nueva cata, por ejemplo
-              // navigate('/nueva-cata') si usas react-router
+              // navegación al formulario, si tienes un router configurado
+              // navigate('/nueva-cata')
             }}
           >
             Añadir nueva cata
@@ -39,12 +59,31 @@ export const TastingList = () => {
         </div>
       ) : (
         <div>
-          <h2 className="text-2xl font-semibold mb-4">Todas las catas</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold">Todas las catas</h2>
+            <button
+              className="btn btn-danger btn-sm flex items-center gap-2"
+              onClick={handleDeleteAll}
+              title="Borrar todas las catas"
+            >
+              <Trash2 size={16} />
+              Borrar todo
+            </button>
+          </div>
           <div className="flex flex-col">
             {entries.map((entry) => (
               <div key={entry.id} className="card card-border card-xs mb-2">
                 <div className="card-body">
-                  <h2 className="card-title">Card Title</h2>
+                  <div className="flex justify-between items-start">
+                    <h2 className="card-title">Card Title</h2>
+                    <button
+                      className="btn btn-error btn-xs"
+                      onClick={() => handleDeleteEntry(entry.id)}
+                      title="Borrar esta cata"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                   <p>Origen: {entry.origin}</p>
                   <p>Método: {entry.method}</p>
                   <p>Fecha: {formatDate(entry.date)}</p>

@@ -1,5 +1,6 @@
 import { useIsMobile } from '../hooks/useIsMobile';
 import { Alert } from '../shared/components/Alert';
+import { ConfirmModal } from '../shared/components/ConfirmModal';
 import { DesktopLayout } from './DesktopLayout';
 import { MobileLayout } from './MobileLayout';
 
@@ -12,6 +13,7 @@ export const AppLayout = () => {
         {isMobile ? <MobileLayout /> : <DesktopLayout />}
       </div>
       <Alert />
+      <ConfirmModal />
     </>
   );
 };

@@ -1,6 +1,11 @@
 import { createEffect, createStore, createEvent, sample } from 'effector';
-import type { TastingEntry } from './types';
-import { addTastingEntry, getAllTastingEntriesByUser } from './db';
+import type { TastingEntry, TastingEntryInput } from './types';
+import {
+  addTastingEntry,
+  deleteAllTastingEntries,
+  deleteTastingEntry,
+  getAllTastingEntriesByUser
+} from './db';
 import { ALERT_TYPE, showAlert } from '../../shared/model/alertModel';
 
 /*********************************************************** */
@@ -41,7 +46,7 @@ export const addTastingEntryFx = createEffect(
   }
 );
 
-const addTasting = createEvent<TastingEntry>();
+const addTasting = createEvent<TastingEntryInput>();
 
 const $isSubmitting = addTastingEntryFx.pending;
 const $addError = createStore<string | null>(null)
@@ -76,6 +81,77 @@ sample({
 });
 
 /*********************************************************** */
+/** Delete tastings 
+/*********************************************************** */
+const deleteTastingEntryFx = createEffect(async (id: number) => {
+  await deleteTastingEntry(id);
+  return id; // retornamos el id borrado para actualizar estado
+});
+
+const deleteAllTastingEntriesFx = createEffect(async () => {
+  await deleteAllTastingEntries();
+});
+
+const deleteTastingEntryEvt = createEvent<number>();
+const deleteAllTastingEntriesEvt = createEvent();
+
+/** Actualiza la lista en memoria quitando la entrada borrada */
+$tastingList.on(deleteTastingEntryFx.doneData, (state, deletedId) =>
+  state.filter((entry) => entry.id !== deletedId)
+);
+
+/** Vacía la lista cuando borramos todo */
+$tastingList.on(deleteAllTastingEntriesFx.done, () => []);
+
+/** Llama al efecto para borrar */
+sample({
+  clock: deleteTastingEntryEvt,
+  target: deleteTastingEntryFx
+});
+
+sample({
+  clock: deleteAllTastingEntriesEvt,
+  target: deleteAllTastingEntriesFx
+});
+
+/** Alertas para borrar */
+sample({
+  clock: deleteTastingEntryFx.doneData,
+  fn: (id) => ({
+    message: `Entrada con ID ${id} borrada`,
+    type: ALERT_TYPE.Success
+  }),
+  target: showAlert
+});
+
+sample({
+  clock: deleteTastingEntryFx.failData,
+  fn: () => ({
+    message: 'Error al borrar la entrada',
+    type: ALERT_TYPE.Error
+  }),
+  target: showAlert
+});
+
+sample({
+  clock: deleteAllTastingEntriesFx.done,
+  fn: () => ({
+    message: 'Todas las entradas han sido borradas',
+    type: ALERT_TYPE.Success
+  }),
+  target: showAlert
+});
+
+sample({
+  clock: deleteAllTastingEntriesFx.failData,
+  fn: () => ({
+    message: 'Error al borrar todas las entradas',
+    type: ALERT_TYPE.Error
+  }),
+  target: showAlert
+});
+
+/*********************************************************** */
 /** Exports
 /*********************************************************** */
 export const tastingStores = {
@@ -87,7 +163,9 @@ export const tastingStores = {
 
 export const tastingEvents = {
   getTastings,
-  addTasting
+  addTasting,
+  deleteTastingEntryEvt,
+  deleteAllTastingEntriesEvt
 };
 
 export const tastingEffects = {
