@@ -17,7 +17,7 @@ export const NavBar = () => {
     <div>
       <nav className="space-y-2">
         <NavLink
-          to="/"
+          to="/create"
           className={({ isActive }) =>
             `block px-2 py-1 rounded hover:bg-base-300 ${
               isActive ? 'font-bold bg-base-300' : ''
@@ -27,7 +27,7 @@ export const NavBar = () => {
           Nueva cata
         </NavLink>
         <NavLink
-          to="/tastings"
+          to="/list"
           className={({ isActive }) =>
             `block px-2 py-1 rounded hover:bg-base-300 ${
               isActive ? 'font-bold bg-base-300' : ''

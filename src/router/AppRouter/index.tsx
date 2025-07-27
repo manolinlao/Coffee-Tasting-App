@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CreateTasting } from '../../pages/CreateTasting';
 import { TastingList } from '../../pages/TastingList';
 import { AppLayout } from '../../AppLayout';
@@ -17,8 +17,9 @@ export const AppRouter = () => {
             </ProtectedRoute>
           }
         >
-          <Route path="/" element={<CreateTasting />} />
-          <Route path="/tastings" element={<TastingList />} />
+          <Route path="/" element={<Navigate to="/list" />} />
+          <Route path="/create" element={<CreateTasting />} />
+          <Route path="/list" element={<TastingList />} />
         </Route>
       </Routes>
     </BrowserRouter>
