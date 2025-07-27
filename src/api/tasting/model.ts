@@ -6,7 +6,6 @@ import { ALERT_TYPE, showAlert } from '../../shared/model/alertModel';
 /*********************************************************** */
 /** Fetching tastings 
 /*********************************************************** */
-//const fetchTastingsFx = createEffect(getAllTastingEntries);
 export const fetchTastingsFx = createEffect(
   async (userId: string) => await getAllTastingEntriesByUser(userId)
 );

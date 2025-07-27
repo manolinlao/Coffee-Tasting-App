@@ -1,6 +1,6 @@
+import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import { $alert, showAlert, type AlertType } from '../../model/alertModel';
-import { useEffect } from 'react';
 
 const typeToClass: Record<AlertType, string> = {
   success: 'alert-success',

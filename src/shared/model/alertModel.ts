@@ -5,7 +5,7 @@ export const ALERT_TYPE = {
   Error: 'error',
   Warning: 'warning',
   Info: 'info'
-};
+} as const;
 
 export type AlertType = (typeof ALERT_TYPE)[keyof typeof ALERT_TYPE];
 
