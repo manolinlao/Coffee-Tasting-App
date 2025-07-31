@@ -7,6 +7,5 @@ export const TastingEntrySchema = z.object({
   origin: z.string().min(1).optional(),
   roaster: z.string().min(1).optional(),
   score: z.number().min(0).max(10).optional(),
-  notes: z.string().optional(),
-  photos: z.array(z.instanceof(File)).optional()
+  notes: z.string().optional()
 });

@@ -5,8 +5,10 @@ import type { TastingEntryForm } from '../../../../api/tasting/types';
 import { TastingEntrySchema } from '../../../../api/tasting/schema';
 import { tastingEvents, tastingStores } from '../../../../api/tasting/model';
 import { TextBlock } from '../../../../shared/components/TextBlock';
-import { Container } from './styles';
 import { authStores } from '../../../../shared/model/authModel';
+import { PhotoUploader } from '../../../../shared/components/PhotoUploader';
+import { Container } from './styles';
+import { phbotoEvents, photoStores } from '../../../../api/photo/model';
 
 export const TastingForm = () => {
   const { t } = useTranslation();
@@ -15,6 +17,8 @@ export const TastingForm = () => {
   const isSubmitting = useUnit(tastingStores.$isSubmitting);
   const addTasting = useUnit(tastingEvents.addTasting);
   const user = useUnit(authStores.$user);
+  const photos = useUnit(photoStores.$tempPhotos);
+  const addTempPhotos = useUnit(phbotoEvents.addTempPhotos);
 
   const [date, setDate] = useState<Date>(new Date());
   const [coffeeName, setCoffeeName] = useState('');
@@ -23,15 +27,8 @@ export const TastingForm = () => {
   const [method, setMethod] = useState('');
   const [score, setScore] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
-  const [photos, setPhotos] = useState<File[]>([]);
 
   const [errors, setErrors] = useState<string[]>([]); // <- errores de validación
-
-  const onPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setPhotos(Array.from(e.target.files));
-    }
-  };
 
   const clearForm = () => {
     setDate(new Date());
@@ -41,12 +38,13 @@ export const TastingForm = () => {
     setMethod('');
     setScore(null);
     setNotes('');
-    setPhotos([]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
+
+    console.log(photos);
 
     const dataToValidate: TastingEntryForm = {
       date,
@@ -55,8 +53,7 @@ export const TastingForm = () => {
       roaster,
       method,
       score,
-      notes,
-      photos
+      notes
     };
 
     const result = TastingEntrySchema.safeParse(dataToValidate);
@@ -169,24 +166,7 @@ export const TastingForm = () => {
           />
         </div>
 
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text">{t('tastingForm.photos')}</span>
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={onPhotoChange}
-            className="file-input file-input-bordered"
-          />
-          {photos.length > 0 && (
-            <img
-              src={URL.createObjectURL(photos[0])}
-              alt="Preview"
-              className="mt-2 rounded shadow max-h-48 object-cover"
-            />
-          )}
-        </div>
+        <PhotoUploader onChange={addTempPhotos} />
 
         <div className="form-control mt-4">
           <button

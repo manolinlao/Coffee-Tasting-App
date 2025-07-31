@@ -8,7 +8,6 @@ export interface TastingEntry {
   method: string;
   score?: number | null;
   notes?: string;
-  photos?: File[];
 }
 
 export type TastingEntryInput = Omit<TastingEntry, 'id'>;
