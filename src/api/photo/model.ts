@@ -28,6 +28,12 @@ export const savePhotosFx = createEffect(
   }
 );
 
+const fetchPhotosByTastingIdFx = createEffect(
+  async (tastingId: number): Promise<PhotoEntry[]> => {
+    return await photoDB.getPhotosByTastingId(tastingId);
+  }
+);
+
 // Store de fotos temporales
 const $tempPhotos = createStore<TempPhoto[]>([])
   .on(addTempPhoto, (state, photo) => [...state, photo])
@@ -63,8 +69,12 @@ export const photoStores = {
   $tempPhotos
 };
 
-export const phbotoEvents = {
+export const photoEvents = {
   addTempPhoto,
   addTempPhotos,
   removeTempPhoto
+};
+
+export const photoEffects = {
+  fetchPhotosByTastingIdFx
 };

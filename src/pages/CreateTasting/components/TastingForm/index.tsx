@@ -8,7 +8,7 @@ import { TextBlock } from '../../../../shared/components/TextBlock';
 import { authStores } from '../../../../shared/model/authModel';
 import { PhotoUploader } from '../../../../shared/components/PhotoUploader';
 import { Container } from './styles';
-import { phbotoEvents, photoStores } from '../../../../api/photo/model';
+import { photoEvents, photoStores } from '../../../../api/photo/model';
 
 export const TastingForm = () => {
   const { t } = useTranslation();
@@ -18,7 +18,7 @@ export const TastingForm = () => {
   const addTasting = useUnit(tastingEvents.addTasting);
   const user = useUnit(authStores.$user);
   const photos = useUnit(photoStores.$tempPhotos);
-  const addTempPhotos = useUnit(phbotoEvents.addTempPhotos);
+  const addTempPhotos = useUnit(photoEvents.addTempPhotos);
 
   const [date, setDate] = useState<Date>(new Date());
   const [coffeeName, setCoffeeName] = useState('');
