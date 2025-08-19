@@ -6,7 +6,7 @@ interface Props {
   heightClass?: string;
 }
 
-export function PhotoCarousel({ photos, heightClass = 'h-64' }: Props) {
+export const PhotoCarousel = ({ photos, heightClass = 'h-64' }: Props) => {
   const [index, setIndex] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -106,7 +106,7 @@ export function PhotoCarousel({ photos, heightClass = 'h-64' }: Props) {
           <img
             src={urls[index].url}
             alt={`Foto ${urls[index].id}`}
-            className="max-h-[90%] max-w-[90%] rounded shadow-lg"
+            className="max-h-[80%] max-w-[80%] rounded shadow-lg"
             onClick={(e) => e.stopPropagation()} // no cerrar al click sobre la imagen
           />
 
@@ -134,6 +134,26 @@ export function PhotoCarousel({ photos, heightClass = 'h-64' }: Props) {
             </>
           )}
 
+          {/* Dots de navegación */}
+          {photos.length > 1 && (
+            <div
+              className="absolute bottom-8 left-0 right-0 flex justify-center gap-2"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {urls.map((u, i) => (
+                <button
+                  key={u.id}
+                  type="button"
+                  onClick={() => setIndex(i)}
+                  className={`btn btn-xs ${i === index ? 'btn-primary' : ''}`}
+                  aria-label={`Ir a la foto ${i + 1}`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Botón cerrar */}
           <button
             className="absolute top-4 right-4 btn btn-sm btn-circle"
@@ -145,4 +165,4 @@ export function PhotoCarousel({ photos, heightClass = 'h-64' }: Props) {
       )}
     </div>
   );
-}
+};
