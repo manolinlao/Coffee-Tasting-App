@@ -7,6 +7,7 @@ import { tastingEvents } from '../../../api/tasting/model';
 import { useEffect, useState } from 'react';
 import { photoEffects } from '../../../api/photo/model';
 import type { PhotoEntry } from '../../../api/photo/types';
+import { PhotoCarousel } from '../PhotoCarousel';
 
 interface TastingCardProps {
   tastingEntry: TastingEntry;
@@ -56,16 +57,7 @@ export const TastingCard: React.FC<TastingCardProps> = ({ tastingEntry }) => {
         <p>Puntuación: {tastingEntry.score}</p>
 
         {photos.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {photos.map((photo) => (
-              <img
-                key={photo.id}
-                src={URL.createObjectURL(photo.blob)}
-                alt={`Foto ${photo.id}`}
-                className="w-24 h-24 object-cover rounded"
-              />
-            ))}
-          </div>
+          <PhotoCarousel photos={photos} heightClass="h-48" />
         )}
       </div>
     </div>
