@@ -1,7 +1,7 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import type { PhotoEntry, TempPhoto } from './types';
 import * as photoDB from './db';
-import { tastingEffects } from '../tasting/model';
+import { deletePhotosByTastingId } from './db';
 
 // Eventos
 const addTempPhoto = createEvent<TempPhoto>();
@@ -9,7 +9,7 @@ const addTempPhotos = createEvent<TempPhoto[]>();
 const removeTempPhoto = createEvent<string>();
 export const clearTempPhotos = createEvent();
 
-export const savePhotosFx = createEffect(
+const savePhotosFx = createEffect(
   async ({ tastingId, photos }: { tastingId: number; photos: TempPhoto[] }) => {
     const entries: Omit<PhotoEntry, 'id'>[] = photos.map((photo) => ({
       tastingId,
@@ -34,6 +34,11 @@ const fetchPhotosByTastingIdFx = createEffect(
   }
 );
 
+const deletePhotosByTastingIdFx = createEffect(async (tastingId: number) => {
+  await deletePhotosByTastingId(tastingId);
+  return tastingId;
+});
+
 // Store de fotos temporales
 const $tempPhotos = createStore<TempPhoto[]>([])
   .on(addTempPhoto, (state, photo) => [...state, photo])
@@ -55,16 +60,6 @@ sample({
   target: clearTempPhotos
 });
 
-sample({
-  source: $tempPhotos,
-  clock: tastingEffects.addTastingEntryFx.doneData,
-  fn: (photos, tastingId) => {
-    console.log('entrada guardada', tastingId, photos);
-    return { tastingId: tastingId as number, photos };
-  },
-  target: savePhotosFx
-});
-
 export const photoStores = {
   $tempPhotos
 };
@@ -76,5 +71,7 @@ export const photoEvents = {
 };
 
 export const photoEffects = {
-  fetchPhotosByTastingIdFx
+  savePhotosFx,
+  fetchPhotosByTastingIdFx,
+  deletePhotosByTastingIdFx
 };

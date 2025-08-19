@@ -170,5 +170,6 @@ export const tastingEvents = {
 
 export const tastingEffects = {
   fetchTastingsFx,
-  addTastingEntryFx
+  addTastingEntryFx,
+  deleteTastingEntryFx
 };
