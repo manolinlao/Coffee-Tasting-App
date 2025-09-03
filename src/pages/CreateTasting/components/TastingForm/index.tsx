@@ -2,13 +2,20 @@ import { useState } from 'react';
 import { useUnit } from 'effector-react';
 import { useTranslation } from 'react-i18next';
 import type { TastingEntryForm } from '../../../../api/tasting/types';
-import { TastingEntrySchema } from '../../../../api/tasting/schema';
+import { tastingEntryFormSchema } from '../../../../api/tasting/schema';
 import { tastingEvents, tastingStores } from '../../../../api/tasting/model';
 import { TextBlock } from '../../../../shared/components/TextBlock';
 import { authStores } from '../../../../shared/model/authModel';
 import { PhotoUploader } from '../../../../shared/components/PhotoUploader';
 import { Container } from './styles';
-import { photoEvents, photoStores } from '../../../../api/photo/model';
+import { photoEvents } from '../../../../api/photo/model';
+
+const baseData: TastingEntryForm = {
+  name: '',
+  date: new Date().toISOString().slice(0, 10),
+  context: { enjoyedAt: 'home', enjoyedOther: '' },
+  coffee: { origin: '', roaster: '', roastDate: '' }
+};
 
 export const TastingForm = () => {
   const { t } = useTranslation();
@@ -17,53 +24,41 @@ export const TastingForm = () => {
   const isSubmitting = useUnit(tastingStores.$isSubmitting);
   const addTasting = useUnit(tastingEvents.addTasting);
   const user = useUnit(authStores.$user);
-  const photos = useUnit(photoStores.$tempPhotos);
   const addTempPhotos = useUnit(photoEvents.addTempPhotos);
 
-  const [date, setDate] = useState<Date>(new Date());
-  const [coffeeName, setCoffeeName] = useState('');
-  const [origin, setOrigin] = useState('');
-  const [roaster, setRoaster] = useState('');
-  const [method, setMethod] = useState('');
-  const [score, setScore] = useState<number | null>(null);
-  const [notes, setNotes] = useState('');
-
-  const [errors, setErrors] = useState<string[]>([]); // <- errores de validación
+  const [form, setForm] = useState<TastingEntryForm>(baseData);
+  const [errors, setErrors] = useState<string[]>([]); // <- validation errors
 
   const clearForm = () => {
-    setDate(new Date());
-    setCoffeeName('');
-    setOrigin('');
-    setRoaster('');
-    setMethod('');
-    setScore(null);
-    setNotes('');
+    setForm(baseData);
+  };
+
+  const handleChange = (path: string, value: string) => {
+    setForm((prev) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const clone: any = structuredClone(prev);
+      const keys = path.split('.');
+      let obj = clone;
+      for (let i = 0; i < keys.length - 1; i++) {
+        obj = obj[keys[i]];
+      }
+      obj[keys[keys.length - 1]] = value;
+      return clone;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
 
-    console.log(photos);
+    const parsed = tastingEntryFormSchema.safeParse(form);
 
-    const dataToValidate: TastingEntryForm = {
-      date,
-      coffeeName,
-      origin,
-      roaster,
-      method,
-      score,
-      notes
-    };
-
-    const result = TastingEntrySchema.safeParse(dataToValidate);
-
-    if (!result.success) {
-      console.error('Errores de validación:', result.error);
+    if (!parsed.success) {
+      console.error('Errores de validación:', parsed.error);
       const validationErrors: string[] = [];
 
       // result.error.issues es un array con los detalles de cada error
-      for (const issue of result.error.issues) {
+      for (const issue of parsed.error.issues) {
         // issue.path es un array con la ruta al campo con error
         // issue.message es el mensaje de error
         const field =
@@ -76,10 +71,10 @@ export const TastingForm = () => {
       return;
     }
 
-    console.log('✅ Datos válidos:', result.data);
+    console.log('✅ Datos válidos:', parsed.data);
 
     setErrors([]);
-    addTasting({ ...result.data, userId: user!.id });
+    addTasting({ ...parsed.data, userId: user!.id });
     clearForm();
   };
 
@@ -92,91 +87,94 @@ export const TastingForm = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Container>
-        <TextBlock bold size="large" color="primary">
-          {t('tastingForm.title')}
-        </TextBlock>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <TextBlock bold size="large" color="primary">
+        {t('tastingForm.title')}
+      </TextBlock>
 
-        {(errors.length > 0 || addError) && (
-          <div className="alert alert-error shadow-sm">
-            <ul className="list-disc list-inside text-sm">
-              {errors.map((err, i) => (
-                <li key={i}>{err}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text">{t('tastingForm.date')}</span>
-          </label>
-          <input
-            type="date"
-            value={date.toISOString().substring(0, 10)}
-            onChange={(e) => setDate(new Date(e.target.value))}
-            className="input input-bordered"
-          />
+      {(errors.length > 0 || addError) && (
+        <div className="alert alert-error shadow-sm">
+          <ul className="list-disc list-inside text-sm">
+            {errors.map((err, i) => (
+              <li key={i}>{err}</li>
+            ))}
+          </ul>
         </div>
+      )}
+      <div>
+        <label className="block text-sm font-medium">Nombre</label>
+        <input
+          value={form.name}
+          onChange={(e) => handleChange('name', e.target.value)}
+          className="input input-bordered w-full"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium">Fecha</label>
+        <input
+          type="date"
+          value={form.date}
+          onChange={(e) => handleChange('date', e.target.value)}
+          className="input input-bordered w-full"
+        />
+      </div>
+      <fieldset>
+        <legend className="font-semibold">Dónde la disfrutaste</legend>
+        <select
+          value={form.context.enjoyedAt}
+          onChange={(e) => handleChange('context.enjoyedAt', e.target.value)}
+          className="select select-bordered w-full"
+        >
+          <option value="home">Casa</option>
+          <option value="coffeeShop">Cafetería</option>
+          <option value="other">Otro</option>
+        </select>
 
-        {[
-          { label: 'name', value: coffeeName, setter: setCoffeeName },
-          { label: 'origin', value: origin, setter: setOrigin },
-          { label: 'roaster', value: roaster, setter: setRoaster },
-          { label: 'method', value: method, setter: setMethod }
-        ].map(({ label, value, setter }) => (
-          <div className="form-control" key={label}>
-            <label className="label">
-              <span className="label-text">{t(`tastingForm.${label}`)}</span>
-            </label>
+        {form.context.enjoyedAt === 'other' ||
+          (form.context.enjoyedAt === 'coffeeShop' && (
             <input
-              type="text"
-              value={value}
-              onChange={(e) => setter(e.target.value)}
-              className="input input-bordered"
+              value={form.context.enjoyedOther}
+              onChange={(e) =>
+                handleChange('context.enjoyedOther', e.target.value)
+              }
+              placeholder="Especifica dónde"
+              className="input input-bordered w-full mt-2"
             />
-          </div>
-        ))}
+          ))}
+      </fieldset>
 
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text">{t('tastingForm.score')}</span>
-          </label>
-          <input
-            type="number"
-            min={0}
-            max={10}
-            value={score !== null ? score : ''}
-            onChange={(e) =>
-              setScore(e.target.value === '' ? null : Number(e.target.value))
-            }
-            className="input input-bordered"
-          />
-        </div>
+      <fieldset>
+        <legend className="font-semibold">Detalles del café</legend>
+        <input
+          value={form.coffee.origin}
+          onChange={(e) => handleChange('coffee.origin', e.target.value)}
+          placeholder="Origen"
+          className="input input-bordered w-full mb-2"
+        />
+        <input
+          value={form.coffee.roaster}
+          onChange={(e) => handleChange('coffee.roaster', e.target.value)}
+          placeholder="Tostador"
+          className="input input-bordered w-full mb-2"
+        />
+        <input
+          type="date"
+          value={form.coffee.roastDate}
+          onChange={(e) => handleChange('coffee.roastDate', e.target.value)}
+          className="input input-bordered w-full"
+        />
+      </fieldset>
 
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text">{t('tastingForm.notes')}</span>
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={4}
-            className="textarea textarea-bordered"
-          />
-        </div>
+      <PhotoUploader onChange={addTempPhotos} />
 
-        <PhotoUploader onChange={addTempPhotos} />
-
-        <div className="form-control mt-4">
-          <button
-            type="submit"
-            className={`btn btn-primary ${isSubmitting ? 'btn-disabled' : ''}`}
-          >
-            {isSubmitting ? 'Guardando...' : t('tastingForm.title')}
-          </button>
-        </div>
-      </Container>
+      <div className="form-control mt-4">
+        <button
+          type="submit"
+          className={`btn btn-primary ${isSubmitting ? 'btn-disabled' : ''}`}
+        >
+          {isSubmitting ? 'Guardando...' : t('tastingForm.title')}
+        </button>
+      </div>
     </form>
   );
 };

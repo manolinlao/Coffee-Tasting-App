@@ -1,11 +1,15 @@
 import { z } from 'zod';
 
-export const TastingEntrySchema = z.object({
-  date: z.date(),
-  method: z.string().min(1),
-  coffeeName: z.string().min(1).optional(),
-  origin: z.string().min(1).optional(),
-  roaster: z.string().min(1).optional(),
-  score: z.number().min(0).max(10).optional(),
-  notes: z.string().optional()
+export const tastingEntryFormSchema = z.object({
+  name: z.string().optional(),
+  date: z.string().nonempty('La fecha es obligatoria'), // ISO (yyyy-mm-dd)
+  context: z.object({
+    enjoyedAt: z.enum(['home', 'coffeeShop', 'other']),
+    enjoyedOther: z.string().optional()
+  }),
+  coffee: z.object({
+    origin: z.string().optional(),
+    roaster: z.string().optional(),
+    roastDate: z.string().optional()
+  })
 });

@@ -1,13 +1,89 @@
 @import 'tailwindcss';
+@plugin "daisyui" {
+  themes: coffee --default;
+}
+
+@plugin "daisyui/theme" {
+  name: 'coffeejournal';
+  default: false;
+  color-scheme: dark; /* UI del sistema en oscuro */
+
+  /* Colores base */
+  --color-base-100: #1e1b18;
+  --color-base-200: #26221e;
+  --color-base-300: #2f2a26;
+  --color-base-content: #edeae6;
+
+  /* Paleta */
+  --color-primary: #c69c6d; /* dorado café */
+  --color-primary-content: #1e1b18;
+  --color-secondary: #8b5e3c; /* espresso */
+  --color-secondary-content: #f5f3f0;
+  --color-accent: #d9b99b; /* crema */
+  --color-accent-content: #1e1b18;
+  --color-neutral: #2f2a26;
+  --color-neutral-content: #edeae6;
+  --color-info: #a3bfa8;
+  --color-success: #9db17c;
+  --color-warning: #e6b450;
+  --color-error: #c44536;
+
+  /* Forma (opcional) */
+  --radius-selector: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+  --border: 1px;
+}
+
+@plugin "daisyui/theme" {
+  name: 'lattejournal';
+  default: true;
+  color-scheme: light;
+
+  --color-base-100: #faf8f5;
+  --color-base-200: #f0ece7;
+  --color-base-300: #e6e2dc;
+  --color-base-content: #3d3d3d;
+
+  --color-primary: #6b4226; /* café tostado */
+  --color-primary-content: #faf8f5;
+  --color-secondary: #a8c3a6; /* verde salvia */
+  --color-secondary-content: #1e1b18;
+  --color-accent: #d4b483; /* miel dorada */
+  --color-accent-content: #1e1b18;
+
+  --color-neutral: #3d3d3d;
+  --color-neutral-content: #faf8f5;
+
+  --color-info: #8da9c4;
+  --color-success: #8fb996;
+  --color-warning: #e6c229;
+  --color-error: #c44536;
+
+  --radius-selector: 0.75rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+  --border: 1px;
+}
+
+/* Tipografías (carga Inter y Playfair en <head>) */
+body {
+  font-family: Inter, system-ui, sans-serif;
+}
+h1,
+h2,
+h3,
+h4 {
+  font-family: 'Playfair Display', ui-serif, serif;
+}
+
 /* 
   modify vscode settings and 
     "files.associations": {
         "*.css": "tailwindcss"
       }
 */
-@plugin "daisyui" {
-  themes: coffee --default;
-}
+
 /*
 html,
 body {
