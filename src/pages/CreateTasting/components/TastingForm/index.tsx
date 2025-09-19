@@ -14,7 +14,8 @@ const baseData: TastingEntryForm = {
   name: '',
   date: new Date().toISOString().slice(0, 10),
   context: { enjoyedAt: 'home', enjoyedOther: '' },
-  coffee: { origin: '', roaster: '', roastDate: '' }
+  coffee: { origin: '', roaster: '', roastDate: '' },
+  method: { brewMethod: 'espresso', brewOther: '' }
 };
 
 export const TastingForm = () => {
@@ -27,11 +28,9 @@ export const TastingForm = () => {
   const addTempPhotos = useUnit(photoEvents.addTempPhotos);
 
   const [form, setForm] = useState<TastingEntryForm>(baseData);
-  const [errors, setErrors] = useState<string[]>([]); // <- validation errors
+  const [errors, setErrors] = useState<string[]>([]);
 
-  const clearForm = () => {
-    setForm(baseData);
-  };
+  const clearForm = () => setForm(baseData);
 
   const handleChange = (path: string, value: string) => {
     setForm((prev) => {
@@ -39,9 +38,7 @@ export const TastingForm = () => {
       const clone: any = structuredClone(prev);
       const keys = path.split('.');
       let obj = clone;
-      for (let i = 0; i < keys.length - 1; i++) {
-        obj = obj[keys[i]];
-      }
+      for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]];
       obj[keys[keys.length - 1]] = value;
       return clone;
     });
@@ -52,26 +49,15 @@ export const TastingForm = () => {
     if (isSubmitting) return;
 
     const parsed = tastingEntryFormSchema.safeParse(form);
-
     if (!parsed.success) {
-      console.error('Errores de validación:', parsed.error);
-      const validationErrors: string[] = [];
-
-      // result.error.issues es un array con los detalles de cada error
-      for (const issue of parsed.error.issues) {
-        // issue.path es un array con la ruta al campo con error
-        // issue.message es el mensaje de error
+      const validationErrors = parsed.error.issues.map((issue) => {
         const field =
           issue.path.length > 0 ? issue.path.join('.') : 'formulario';
-        validationErrors.push(`${field}: ${issue.message}`);
-      }
-
+        return `${field}: ${issue.message}`;
+      });
       setErrors(validationErrors);
-
       return;
     }
-
-    console.log('✅ Datos válidos:', parsed.data);
 
     setErrors([]);
     addTasting({ ...parsed.data, userId: user!.id });
@@ -87,7 +73,7 @@ export const TastingForm = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <TextBlock bold size="large" color="primary">
         {t('tastingForm.title')}
       </TextBlock>
@@ -101,76 +87,119 @@ export const TastingForm = () => {
           </ul>
         </div>
       )}
-      <div>
-        <label className="block text-sm font-medium">Nombre</label>
+
+      {/* Nombre y fecha */}
+      <div className="card bg-base-200 p-6 rounded-xl shadow-md space-y-4">
+        <label className="block text-sm font-medium text-neutral-content">
+          Nombre
+        </label>
         <input
           value={form.name}
           onChange={(e) => handleChange('name', e.target.value)}
-          className="input input-bordered w-full"
+          className="input input-bordered w-full focus:ring-2 focus:ring-primary"
         />
-      </div>
-      <div>
-        <label className="block text-sm font-medium">Fecha</label>
+
+        <label className="block text-sm font-medium text-neutral-content">
+          Fecha
+        </label>
         <input
           type="date"
           value={form.date}
           onChange={(e) => handleChange('date', e.target.value)}
-          className="input input-bordered w-full"
+          className="input input-bordered w-full focus:ring-2 focus:ring-primary"
         />
       </div>
-      <fieldset>
-        <legend className="font-semibold">Dónde la disfrutaste</legend>
+
+      {/* Dónde la disfrutaste */}
+      <div className="card bg-base-200 p-6 rounded-xl shadow-md space-y-4">
+        <legend className="font-serif text-lg text-secondary">
+          Dónde la disfrutaste
+        </legend>
         <select
           value={form.context.enjoyedAt}
           onChange={(e) => handleChange('context.enjoyedAt', e.target.value)}
-          className="select select-bordered w-full"
+          className="select select-bordered w-full focus:ring-2 focus:ring-primary"
         >
           <option value="home">Casa</option>
           <option value="coffeeShop">Cafetería</option>
           <option value="other">Otro</option>
         </select>
 
-        {form.context.enjoyedAt === 'other' ||
-          (form.context.enjoyedAt === 'coffeeShop' && (
-            <input
-              value={form.context.enjoyedOther}
-              onChange={(e) =>
-                handleChange('context.enjoyedOther', e.target.value)
-              }
-              placeholder="Especifica dónde"
-              className="input input-bordered w-full mt-2"
-            />
-          ))}
-      </fieldset>
+        {(form.context.enjoyedAt === 'other' ||
+          form.context.enjoyedAt === 'coffeeShop') && (
+          <input
+            value={form.context.enjoyedOther}
+            onChange={(e) =>
+              handleChange('context.enjoyedOther', e.target.value)
+            }
+            placeholder="Especifica dónde"
+            className="input input-bordered w-full mt-2 focus:ring-2 focus:ring-primary"
+          />
+        )}
+      </div>
 
-      <fieldset>
-        <legend className="font-semibold">Detalles del café</legend>
+      {/* Detalles del café */}
+      <div className="card bg-base-200 p-6 rounded-xl shadow-md space-y-4">
+        <legend className="font-serif text-lg text-secondary">
+          Detalles del café
+        </legend>
         <input
           value={form.coffee.origin}
           onChange={(e) => handleChange('coffee.origin', e.target.value)}
           placeholder="Origen"
-          className="input input-bordered w-full mb-2"
+          className="input input-bordered w-full focus:ring-2 focus:ring-primary"
         />
         <input
           value={form.coffee.roaster}
           onChange={(e) => handleChange('coffee.roaster', e.target.value)}
           placeholder="Tostador"
-          className="input input-bordered w-full mb-2"
+          className="input input-bordered w-full focus:ring-2 focus:ring-primary"
         />
         <input
           type="date"
           value={form.coffee.roastDate}
           onChange={(e) => handleChange('coffee.roastDate', e.target.value)}
-          className="input input-bordered w-full"
+          className="input input-bordered w-full focus:ring-2 focus:ring-primary"
         />
+      </div>
+
+      {/* Método */}
+      <fieldset>
+        <legend className="font-semibold">Método de preparación</legend>
+        <select
+          value={form.method.brewMethod}
+          onChange={(e) => handleChange('method.brewMethod', e.target.value)}
+          className="select select-bordered w-full"
+        >
+          <option value="espresso">Espresso</option>
+          <option value="v60">V60</option>
+          <option value="aeropress">Aeropress</option>
+          <option value="frenchPress">French Press</option>
+          <option value="chemex">Chemex</option>
+          <option value="mokapot">Moka pot</option>
+          <option value="other">Otro</option>
+        </select>
+
+        {form.method.brewMethod === 'other' && (
+          <input
+            value={form.method.brewOther}
+            onChange={(e) => handleChange('method.brewOther', e.target.value)}
+            placeholder="Especifica el método"
+            className="input input-bordered w-full mt-2"
+          />
+        )}
       </fieldset>
 
-      <PhotoUploader onChange={addTempPhotos} />
+      {/* Fotos */}
+      <div className="card bg-base-200 p-6 rounded-xl shadow-md space-y-2">
+        <PhotoUploader onChange={addTempPhotos} />
+      </div>
 
+      {/* Botón */}
       <div className="form-control mt-4">
         <button
           type="submit"
-          className={`btn btn-primary ${isSubmitting ? 'btn-disabled' : ''}`}
+          className={`btn btn-primary shadow-lg transition hover:scale-105 ${isSubmitting ? 'btn-disabled' : ''}`}
         >
           {isSubmitting ? 'Guardando...' : t('tastingForm.title')}
         </button>

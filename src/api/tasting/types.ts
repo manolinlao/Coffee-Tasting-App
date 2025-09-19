@@ -1,3 +1,5 @@
+import type { BrewMethod, EnjoyedAt } from './constants';
+
 export interface TastingEntry {
   id: number;
   userId: string;
@@ -5,7 +7,7 @@ export interface TastingEntry {
   name?: string;
 
   context: {
-    enjoyedAt: 'home' | 'coffeeShop' | 'other';
+    enjoyedAt: EnjoyedAt;
     enjoyedOther?: string;
   };
 
@@ -13,6 +15,11 @@ export interface TastingEntry {
     origin?: string;
     roaster?: string;
     roastDate?: string;
+  };
+
+  method: {
+    brewMethod: BrewMethod;
+    brewOther?: string;
   };
 }
 
