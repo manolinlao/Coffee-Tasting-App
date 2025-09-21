@@ -47,7 +47,6 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export const FlavorWheel = ({ flavors = [], onChange }: FlavorWheelProps) => {
   const ref = useRef<SVGSVGElement>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<FlavorNote | null>(null);
 
   useEffect(() => {
@@ -95,9 +94,6 @@ export const FlavorWheel = ({ flavors = [], onChange }: FlavorWheelProps) => {
 
     const nodes = root.descendants().filter((d) => d.depth > 0);
 
-    // Tooltip flotante
-    const tooltip = d3.select(tooltipRef.current);
-
     g.selectAll('path')
       .data(nodes)
       .join('path')
@@ -133,41 +129,6 @@ export const FlavorWheel = ({ flavors = [], onChange }: FlavorWheelProps) => {
         );
         return match ? 0.9 : 0.3;
       })
-      .on('mouseover', (event, d) => {
-        const f: FlavorNote = {
-          category: d.depth === 1 ? d.data.category : d.parent?.data.category,
-          subcategory:
-            d.depth === 2
-              ? d.data.name
-              : d.depth === 3
-                ? d.parent?.data.name
-                : undefined,
-          note: d.depth === 3 ? d.data.name : undefined,
-          intensity: 3
-        };
-        const match = flavors.find(
-          (s) =>
-            s.category === f.category &&
-            (!f.subcategory || s.subcategory === f.subcategory) &&
-            (!f.note || s.note === f.note)
-        );
-        tooltip
-          .style('display', 'block')
-          .html(
-            `<strong>${f.category}</strong>` +
-              (f.subcategory ? ` > ${f.subcategory}` : '') +
-              (f.note ? ` > ${f.note}` : '') +
-              `<br/>Intensidad: ${match ? match.intensity : '-'}`
-          )
-          .style('left', `${event.pageX + 10}px`)
-          .style('top', `${event.pageY + 10}px`);
-      })
-      .on('mousemove', (event) => {
-        tooltip
-          .style('left', `${event.pageX + 10}px`)
-          .style('top', `${event.pageY + 10}px`);
-      })
-      .on('mouseout', () => tooltip.style('display', 'none'))
       .on('click', (_event, d) => {
         const f: FlavorNote = {
           category: d.depth === 1 ? d.data.category : d.parent?.data.category,
@@ -199,40 +160,37 @@ export const FlavorWheel = ({ flavors = [], onChange }: FlavorWheelProps) => {
   };
 
   return (
-    <div className="flex flex-col items-center relative">
-      <svg ref={ref}></svg>
-      <div
-        ref={tooltipRef}
-        style={{
-          position: 'absolute',
-          pointerEvents: 'none',
-          backgroundColor: '#333',
-          color: '#fff',
-          padding: '4px 8px',
-          borderRadius: '4px',
-          fontSize: '12px',
-          display: 'none'
-        }}
-      ></div>
+    <div className="flex flex-col md:flex-row gap-4">
+      <svg ref={ref} className="flex-1"></svg>
 
-      {selected && (
-        <div className="mt-4 card bg-base-200 p-4 shadow-md">
-          <p className="font-semibold">
-            {selected.note || selected.subcategory || selected.category}
-          </p>
-          <div className="flex gap-2 mt-2">
-            {[1, 2, 3, 4, 5].map((lvl) => (
-              <button
-                key={lvl}
-                onClick={() => handleIntensityChange(lvl)}
-                className={`btn btn-sm ${lvl === selected.intensity ? 'btn-primary' : 'btn-outline'}`}
-              >
-                {lvl}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Panel lateral fijo */}
+      <div className="card bg-base-200 p-4 shadow-md w-full md:w-64 flex-shrink-0">
+        {selected ? (
+          <>
+            <p className="font-semibold">
+              {selected.note || selected.subcategory || selected.category}
+            </p>
+            <p className="text-sm text-gray-500">
+              {selected.category}
+              {selected.subcategory ? ` → ${selected.subcategory}` : ''}
+              {selected.note ? ` → ${selected.note}` : ''}
+            </p>
+            <div className="flex gap-2 mt-2">
+              {[1, 2, 3, 4, 5].map((lvl) => (
+                <button
+                  key={lvl}
+                  onClick={() => handleIntensityChange(lvl)}
+                  className={`btn btn-sm ${lvl === selected.intensity ? 'btn-primary' : 'btn-outline'}`}
+                >
+                  {lvl}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="text-gray-500">Selecciona una nota en la rueda</p>
+        )}
+      </div>
     </div>
   );
 };
