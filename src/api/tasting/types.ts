@@ -1,4 +1,11 @@
-import type { BrewMethod, EnjoyedAt } from './constants';
+import type { Beverage, BrewMethod, EnjoyedAt } from './constants';
+
+export type FlavorNote = {
+  category: string; // ej: "Frutal"
+  subcategory?: string; // ej: "Cítrico"
+  note?: string; // ej: "Limón"
+  intensity: number; // 1–5 (ahora obligatorio)
+};
 
 export interface TastingEntry {
   id: number;
@@ -18,9 +25,13 @@ export interface TastingEntry {
   };
 
   method: {
-    brewMethod: BrewMethod;
+    brewMethod?: BrewMethod;
     brewOther?: string;
+    beverage?: Beverage;
+    beverageOther?: string;
   };
+
+  flavors?: FlavorNote[];
 }
 
 export type TastingEntryInput = Omit<TastingEntry, 'id'>;

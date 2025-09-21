@@ -6,8 +6,28 @@ export const BREW_METHODS = [
   'v60',
   'aeropress',
   'frenchPress',
+  'coldBrew',
+  'pourOver',
+  'drip',
   'chemex',
   'mokapot',
   'other'
 ] as const;
 export type BrewMethod = (typeof BREW_METHODS)[number];
+
+export const BEVERAGES = [
+  'doubleEspresso',
+  'singleExpresso',
+  'americano',
+  'flatWhite',
+  'cortado',
+  'magic',
+  'cappuccino',
+  'latte',
+  'ristretto',
+  'lungo',
+  'macchiato',
+  'mocha',
+  'other'
+] as const;
+export type Beverage = (typeof BEVERAGES)[number];

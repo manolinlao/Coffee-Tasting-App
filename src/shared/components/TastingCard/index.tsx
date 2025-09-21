@@ -37,6 +37,8 @@ export const TastingCard: React.FC<TastingCardProps> = ({ tastingEntry }) => {
     });
   };
 
+  console.log(tastingEntry);
+
   return (
     <div className="card card-border card-xs mb-2">
       <div className="card-body">
@@ -50,11 +52,9 @@ export const TastingCard: React.FC<TastingCardProps> = ({ tastingEntry }) => {
             <Trash2 size={14} />
           </button>
         </div>
-        <p>Origen: {tastingEntry.origin}</p>
-        <p>Método: {tastingEntry.method}</p>
+        <p>Origen: {tastingEntry.coffee.origin}</p>
+        <p>Método: {tastingEntry.method.brewMethod}</p>
         <p>Fecha: {formatDate(tastingEntry.date)}</p>
-        <p>Notas: {tastingEntry.notes}</p>
-        <p>Puntuación: {tastingEntry.score}</p>
 
         {photos.length > 0 && (
           <PhotoCarousel photos={photos} heightClass="h-48" />

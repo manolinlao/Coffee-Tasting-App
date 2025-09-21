@@ -9,13 +9,19 @@ import { authStores } from '../../../../shared/model/authModel';
 import { PhotoUploader } from '../../../../shared/components/PhotoUploader';
 import { Container } from './styles';
 import { photoEvents } from '../../../../api/photo/model';
+import { FlavorWheel } from '../../../../shared/components/FlavorWheel';
 
 const baseData: TastingEntryForm = {
   name: '',
   date: new Date().toISOString().slice(0, 10),
   context: { enjoyedAt: 'home', enjoyedOther: '' },
   coffee: { origin: '', roaster: '', roastDate: '' },
-  method: { brewMethod: 'espresso', brewOther: '' }
+  method: {
+    brewMethod: undefined,
+    brewOther: '',
+    beverage: undefined,
+    beverageOther: ''
+  }
 };
 
 export const TastingForm = () => {
@@ -171,10 +177,14 @@ export const TastingForm = () => {
           onChange={(e) => handleChange('method.brewMethod', e.target.value)}
           className="select select-bordered w-full"
         >
+          <option value="">Selecciona...</option>
           <option value="espresso">Espresso</option>
           <option value="v60">V60</option>
           <option value="aeropress">Aeropress</option>
           <option value="frenchPress">French Press</option>
+          <option value="coldBrew">Cold Brew</option>
+          <option value="pourOVer">Pour Over</option>
+          <option value="drip">Drip</option>
           <option value="chemex">Chemex</option>
           <option value="mokapot">Moka pot</option>
           <option value="other">Otro</option>
@@ -189,6 +199,52 @@ export const TastingForm = () => {
           />
         )}
       </fieldset>
+
+      {/* Bebida */}
+      <fieldset>
+        <legend className="font-semibold">Tipo de bebida</legend>
+        <select
+          value={form.method.beverage || ''}
+          onChange={(e) => handleChange('method.beverage', e.target.value)}
+          className="select select-bordered w-full"
+        >
+          <option value="">Selecciona...</option>
+          <option value="espresso">Espresso</option>
+          <option value="americano">Americano</option>
+          <option value="flatWhite">Flat White</option>
+          <option value="cortado">Cortado</option>
+          <option value="magic">Magic</option>
+          <option value="cappuccino">Cappuccino</option>
+          <option value="latte">Latte</option>
+          <option value="ristretto">Ristretto</option>
+          <option value="lungo">Lungo</option>
+          <option value="macchiato">Macchiato</option>
+          <option value="mocha">Mocha</option>
+          <option value="other">Otro</option>
+        </select>
+
+        {form.method.beverage === 'other' && (
+          <input
+            value={form.method.beverageOther}
+            onChange={(e) =>
+              handleChange('method.beverageOther', e.target.value)
+            }
+            placeholder="Especifica la bebida"
+            className="input input-bordered w-full mt-2"
+          />
+        )}
+      </fieldset>
+
+      {/* Notas de sabor */}
+      <div className="card bg-base-200 p-6 rounded-xl shadow-md space-y-2">
+        <legend className="font-serif text-lg text-secondary">
+          Notas de sabor
+        </legend>
+        <FlavorWheel
+          value={form.flavors || []}
+          onChange={(flavors) => handleChange('flavors', flavors)}
+        />
+      </div>
 
       {/* Fotos */}
       <div className="card bg-base-200 p-6 rounded-xl shadow-md space-y-2">
