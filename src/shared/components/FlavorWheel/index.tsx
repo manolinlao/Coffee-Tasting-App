@@ -1,139 +1,237 @@
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Doughnut } from 'react-chartjs-2';
-import { useRef, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
+import * as d3 from 'd3';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
-
-// 📌 estructura básica de sabores
-const flavors = {
-  Frutal: ['Cítrico', 'Frutas rojas', 'Tropical'],
-  Floral: ['Jazmín', 'Rosa'],
-  Dulce: ['Caramelo', 'Miel', 'Chocolate']
-};
-
-// 🔹 Colores por categoría
-const categoryColors: Record<string, string> = {
-  Frutal: 'rgba(255, 99, 132, 0.6)',
-  Floral: 'rgba(54, 162, 235, 0.6)',
-  Dulce: 'rgba(255, 206, 86, 0.6)'
-};
-
-export type FlavorSelection = {
+export type FlavorNote = {
   category: string;
-  note: string;
-  intensity: number;
+  subcategory?: string;
+  note?: string;
+  intensity: number; // 1–5
 };
 
 interface FlavorWheelProps {
-  value: FlavorSelection[];
-  onChange: (val: FlavorSelection[]) => void;
+  flavors: FlavorNote[];
+  onChange: (flavors: FlavorNote[]) => void;
 }
 
-export const FlavorWheel = ({ value, onChange }: FlavorWheelProps) => {
-  const chartRef = useRef<any>(null);
-  const [selected, setSelected] = useState<FlavorSelection[]>(value || []);
-
-  // 🔹 flatten categorías → subnotas
-  const allNotes = Object.entries(flavors).flatMap(([category, notes]) =>
-    notes.map((n) => ({ category, note: n }))
-  );
-
-  // 🔹 datos para doughnut
-  const data = {
-    labels: allNotes.map((f) => `${f.category} - ${f.note}`),
-    datasets: [
-      {
-        data: allNotes.map((f) => {
-          const match = selected.find(
-            (s) => s.category === f.category && s.note === f.note
-          );
-          return match ? match.intensity : 1; // intensidad o mínimo 1
-        }),
-        backgroundColor: allNotes.map((f) => {
-          const match = selected.find(
-            (s) => s.category === f.category && s.note === f.note
-          );
-          return match
-            ? categoryColors[f.category].replace('0.6', '1') // resaltado
-            : categoryColors[f.category];
-        }),
-        borderWidth: 1
-      }
+// Datos jerárquicos
+const DATA = [
+  {
+    category: 'Frutal',
+    subcategories: [
+      { name: 'Cítrico', notes: ['Limón', 'Naranja', 'Pomelo'] },
+      { name: 'Tropical', notes: ['Mango', 'Piña', 'Maracuyá'] }
     ]
-  };
+  },
+  {
+    category: 'Floral',
+    subcategories: [
+      { name: 'Jazmín', notes: ['Jazmín', 'Lavanda'] },
+      { name: 'Rosas', notes: ['Rosa', 'Geranio'] }
+    ]
+  },
+  {
+    category: 'Dulce',
+    subcategories: [
+      { name: 'Caramelo', notes: ['Caramelo', 'Miel'] },
+      { name: 'Chocolate', notes: ['Chocolate', 'Cacao'] }
+    ]
+  }
+];
 
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: { display: false }
-    },
-    onClick: (_evt: any, elements: any[]) => {
-      if (!elements.length) return;
-      const index = elements[0].index;
-      const flavor = allNotes[index];
+// Colores por categoría
+const CATEGORY_COLORS: Record<string, string> = {
+  Frutal: '#FFB3B3',
+  Floral: '#B3D9FF',
+  Dulce: '#FFF2B3'
+};
 
-      let updated: FlavorSelection[];
-      const existing = selected.find(
-        (s) => s.category === flavor.category && s.note === flavor.note
-      );
+export const FlavorWheel = ({ flavors = [], onChange }: FlavorWheelProps) => {
+  const ref = useRef<SVGSVGElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [selected, setSelected] = useState<FlavorNote | null>(null);
 
-      if (existing) {
-        // quitar
-        updated = selected.filter(
-          (s) => !(s.category === flavor.category && s.note === flavor.note)
+  useEffect(() => {
+    if (!ref.current) return;
+
+    // Convertir notes string a objetos para D3
+    const dataHierarchical = DATA.map((c) => ({
+      category: c.category,
+      children: c.subcategories.map((sc) => ({
+        name: sc.name,
+        children: sc.notes.map((n) => ({ name: n }))
+      }))
+    }));
+
+    const width = 450;
+    const height = 450;
+    const radius = Math.min(width, height) / 2;
+
+    const svg = d3.select(ref.current);
+    svg.selectAll('*').remove(); // limpiar
+
+    const root = d3
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .hierarchy({ name: 'root', children: dataHierarchical } as any)
+      .sum(() => 1)
+      .sort((a, b) => (a.data.name || '').localeCompare(b.data.name || ''));
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    d3.partition<any>().size([2 * Math.PI, radius])(root as any);
+
+    const arc = d3
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .arc<any>()
+      .startAngle((d) => d.x0)
+      .endAngle((d) => d.x1)
+      .innerRadius((d) => d.y0)
+      .outerRadius((d) => d.y1);
+
+    const g = svg
+      .attr('width', width)
+      .attr('height', height)
+      .attr('style', 'display:block')
+      .append('g')
+      .attr('transform', `translate(${width / 2},${height / 2})`);
+
+    const nodes = root.descendants().filter((d) => d.depth > 0);
+
+    // Tooltip flotante
+    const tooltip = d3.select(tooltipRef.current);
+
+    g.selectAll('path')
+      .data(nodes)
+      .join('path')
+      .attr('d', arc)
+      .attr('fill', (d) => {
+        if (d.depth === 1) return CATEGORY_COLORS[d.data.category];
+        if (d.depth === 2)
+          return CATEGORY_COLORS[d.parent?.data.category ?? ''] ?? '#ccc';
+        if (d.depth === 3)
+          return (
+            CATEGORY_COLORS[d.parent?.parent?.data.category ?? ''] ?? '#ccc'
+          );
+        return '#ccc';
+      })
+      .attr('stroke', '#fff')
+      .attr('opacity', (d) => {
+        const f: FlavorNote = {
+          category: d.depth === 1 ? d.data.category : d.parent?.data.category,
+          subcategory:
+            d.depth === 2
+              ? d.data.name
+              : d.depth === 3
+                ? d.parent?.data.name
+                : undefined,
+          note: d.depth === 3 ? d.data.name : undefined,
+          intensity: 3
+        };
+        const match = flavors.find(
+          (s) =>
+            s.category === f.category &&
+            (!f.subcategory || s.subcategory === f.subcategory) &&
+            (!f.note || s.note === f.note)
         );
-      } else {
-        // añadir con intensidad 3 por defecto
-        updated = [...selected, { ...flavor, intensity: 3 }];
-      }
+        return match ? 0.9 : 0.3;
+      })
+      .on('mouseover', (event, d) => {
+        const f: FlavorNote = {
+          category: d.depth === 1 ? d.data.category : d.parent?.data.category,
+          subcategory:
+            d.depth === 2
+              ? d.data.name
+              : d.depth === 3
+                ? d.parent?.data.name
+                : undefined,
+          note: d.depth === 3 ? d.data.name : undefined,
+          intensity: 3
+        };
+        const match = flavors.find(
+          (s) =>
+            s.category === f.category &&
+            (!f.subcategory || s.subcategory === f.subcategory) &&
+            (!f.note || s.note === f.note)
+        );
+        tooltip
+          .style('display', 'block')
+          .html(
+            `<strong>${f.category}</strong>` +
+              (f.subcategory ? ` > ${f.subcategory}` : '') +
+              (f.note ? ` > ${f.note}` : '') +
+              `<br/>Intensidad: ${match ? match.intensity : '-'}`
+          )
+          .style('left', `${event.pageX + 10}px`)
+          .style('top', `${event.pageY + 10}px`);
+      })
+      .on('mousemove', (event) => {
+        tooltip
+          .style('left', `${event.pageX + 10}px`)
+          .style('top', `${event.pageY + 10}px`);
+      })
+      .on('mouseout', () => tooltip.style('display', 'none'))
+      .on('click', (_event, d) => {
+        const f: FlavorNote = {
+          category: d.depth === 1 ? d.data.category : d.parent?.data.category,
+          subcategory:
+            d.depth === 2
+              ? d.data.name
+              : d.depth === 3
+                ? d.parent?.data.name
+                : undefined,
+          note: d.depth === 3 ? d.data.name : undefined,
+          intensity: 3
+        };
+        setSelected(f);
+      });
+  }, [flavors]);
 
-      setSelected(updated);
-      onChange(updated);
-    }
-  };
-
-  const handleIntensityChange = (note: FlavorSelection, newVal: number) => {
-    const updated = selected.map((s) =>
-      s.category === note.category && s.note === note.note
-        ? { ...s, intensity: newVal }
-        : s
+  const handleIntensityChange = (intensity: number) => {
+    if (!selected) return;
+    const updated = flavors.filter(
+      (f) =>
+        !(
+          f.category === selected.category &&
+          f.subcategory === selected.subcategory &&
+          f.note === selected.note
+        )
     );
-    setSelected(updated);
-    onChange(updated);
+    onChange([...updated, { ...selected, intensity }]);
+    setSelected(null);
   };
 
   return (
-    <div className="flex flex-col items-center space-y-4">
-      <div className="w-80 h-80">
-        <Doughnut ref={chartRef} data={data} options={options} />
-      </div>
+    <div className="flex flex-col items-center relative">
+      <svg ref={ref}></svg>
+      <div
+        ref={tooltipRef}
+        style={{
+          position: 'absolute',
+          pointerEvents: 'none',
+          backgroundColor: '#333',
+          color: '#fff',
+          padding: '4px 8px',
+          borderRadius: '4px',
+          fontSize: '12px',
+          display: 'none'
+        }}
+      ></div>
 
-      {/* Lista de seleccionados con sliders */}
-      {selected.length > 0 && (
-        <ul className="w-full space-y-2">
-          {selected.map((s, i) => (
-            <li
-              key={i}
-              className="flex items-center justify-between gap-2 bg-base-200 p-2 rounded-lg"
-            >
-              <span className="text-sm">
-                ✅ {s.category} → {s.note}
-              </span>
-              <input
-                type="range"
-                min={1}
-                max={5}
-                step={1}
-                value={s.intensity}
-                onChange={(e) =>
-                  handleIntensityChange(s, parseInt(e.target.value))
-                }
-                className="range range-xs w-32"
-              />
-              <span className="text-xs">{s.intensity}</span>
-            </li>
-          ))}
-        </ul>
+      {selected && (
+        <div className="mt-4 card bg-base-200 p-4 shadow-md">
+          <p className="font-semibold">
+            {selected.note || selected.subcategory || selected.category}
+          </p>
+          <div className="flex gap-2 mt-2">
+            {[1, 2, 3, 4, 5].map((lvl) => (
+              <button
+                key={lvl}
+                onClick={() => handleIntensityChange(lvl)}
+                className={`btn btn-sm ${lvl === selected.intensity ? 'btn-primary' : 'btn-outline'}`}
+              >
+                {lvl}
+              </button>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );

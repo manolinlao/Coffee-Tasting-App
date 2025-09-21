@@ -241,8 +241,8 @@ export const TastingForm = () => {
           Notas de sabor
         </legend>
         <FlavorWheel
-          value={form.flavors || []}
-          onChange={(flavors) => handleChange('flavors', flavors)}
+          flavors={form.flavors || []}
+          onChange={(val) => setForm((f) => ({ ...f, flavors: val }))}
         />
       </div>
 
